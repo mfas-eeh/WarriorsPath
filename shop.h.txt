@@ -1,0 +1,31 @@
+#include "raylib.h"
+#include "shop.h"
+
+int main() {
+    InitWindow(1280, 720, "Game");
+    SetExitKey(KEY_NULL);          // so ESC closes the shop instead of the game
+    SetTargetFPS(60);
+
+    Shop shop;
+    shop.gold = 500;
+    shop.Add("Iron Sword", "A sturdy blade for any adventurer.", 120, "assets/items/sword.png");
+    shop.Add("Health Potion", "Restores a good amount of health.", 35, "assets/items/potion.png");
+    // ...one Add() per PNG
+    shop.LoadTextures(true);       // true = crisp pixel art, false = smooth
+    shop.onBuy = [&](int i) { /* add shop.items[i] to your inventory */ };
+
+    while (!WindowShouldClose()) {
+        if (IsKeyPressed(KEY_B)) shop.Toggle();
+        shop.Update();
+
+        if (!shop.open) { /* update player, enemies, etc. */ }
+
+        BeginDrawing();
+        ClearBackground(BLACK);
+        /* draw your world here */
+        shop.Draw();               // always last so it sits on top
+        EndDrawing();
+    }
+    shop.Unload();
+    CloseWindow();
+}

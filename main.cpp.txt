@@ -1,0 +1,57 @@
+#include "raylib.h"
+#include "MainMenu.hpp"
+
+enum class AppState { Menu, Game };
+
+int main() {
+    wp::GameSettings settings = wp::LoadSettings();
+
+    unsigned int flags = FLAG_WINDOW_RESIZABLE;
+    if (settings.vsync) flags |= FLAG_VSYNC_HINT;
+    SetConfigFlags(flags);
+
+    InitWindow(1280, 720, "The Warrior's Path");
+    SetWindowMinSize(640, 360);
+    SetExitKey(KEY_NULL);
+    InitAudioDevice();
+
+    wp::MainMenu menu;
+    menu.Init(&settings, "assets/menu");
+
+    AppState state = AppState::Menu;
+    bool quit = false;
+
+    while (!quit && !WindowShouldClose()) {
+        float dt = GetFrameTime();
+
+        if (state == AppState::Menu) {
+            menu.Update(dt);
+            menu.Draw();
+
+            if (menu.action == wp::MenuAction::StartGame) {
+                menu.StopMusic();
+                state = AppState::Game;
+            } else if (menu.action == wp::MenuAction::Quit) {
+                quit = true;
+            }
+        } else {
+            if (IsKeyPressed(KEY_ESCAPE)) {
+                menu.Reset();
+                state = AppState::Menu;
+                continue;
+            }
+
+            BeginDrawing();
+            ClearBackground(Color{ 24, 30, 28, 255 });
+            DrawText("GAME RUNNING (replace with your game). Press ESC for menu.", 40, 40, 24, RAYWHITE);
+            wp::DrawBrightnessOverlay(settings);
+            EndDrawing();
+        }
+    }
+
+    wp::SaveSettings(settings);
+    menu.Unload();
+    CloseAudioDevice();
+    CloseWindow();
+    return 0;
+}
